@@ -1,0 +1,25 @@
+{
+  "name": "telugu-movie-finder",
+  "version": "1.0.0",
+  "description": "A web application to search for Telugu movies released on specific dates",
+  "main": "index.js",
+  "scripts": {
+    "start": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "dev": "concurrently \"cd api && flask run --port=5000\" \"cd client && npm start\"",
+    "install-client": "cd client && npm install",
+    "setup": "npm install && npm run install-client && pip install -r requirements.txt"
+  },
+  "keywords": [
+    "movies",
+    "react",
+    "web-scraping",
+    "wikipedia",
+    "telugu"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
