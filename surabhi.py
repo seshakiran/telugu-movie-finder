@@ -112,33 +112,54 @@ def get_llm_movie_summary(text):
         print(f"LLM summarization failed: {e}", file=sys.stderr)
         return "LLM summarization failed."
 
-def get_movie_summary(movie_url):
+def get_movie_summary(movie_url, movie_title=None):
     """
     Visits the movie's Wikipedia page (if available) and gets a summary
     either by LLM processing or by simply reading all text.
+    If Wikipedia data isn't available, returns a Google search URL.
     """
     if not movie_url:
-        return "Not available"
+        if movie_title:
+            # Create a Google search URL for the movie
+            search_query = f"Telugu movie {movie_title}"
+            google_url = f"https://www.google.com/search?q={search_query.replace(' ', '+')}"
+            return {"summary": "Not available on Wikipedia", "google_search_url": google_url}
+        return {"summary": "Not available", "google_search_url": None}
 
     try:
         response = requests.get(movie_url)
         if response.status_code != 200:
-            return "Not available"
+            if movie_title:
+                # Create a Google search URL for the movie
+                search_query = f"Telugu movie {movie_title}"
+                google_url = f"https://www.google.com/search?q={search_query.replace(' ', '+')}"
+                return {"summary": "Not available on Wikipedia", "google_search_url": google_url}
+            return {"summary": "Not available", "google_search_url": None}
     except Exception as e:
         print(f"Error fetching URL {movie_url}: {e}", file=sys.stderr)
-        return "Not available"
+        if movie_title:
+            # Create a Google search URL for the movie
+            search_query = f"Telugu movie {movie_title}"
+            google_url = f"https://www.google.com/search?q={search_query.replace(' ', '+')}"
+            return {"summary": "Not available on Wikipedia", "google_search_url": google_url}
+        return {"summary": "Not available", "google_search_url": None}
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
     all_text = get_all_text_from_page(soup)
     if all_text == "Not available":
-        return "Not available"
+        if movie_title:
+            # Create a Google search URL for the movie
+            search_query = f"Telugu movie {movie_title}"
+            google_url = f"https://www.google.com/search?q={search_query.replace(' ', '+')}"
+            return {"summary": "Not available on Wikipedia", "google_search_url": google_url}
+        return {"summary": "Not available", "google_search_url": None}
 
     movie_summary = get_llm_movie_summary(all_text)
     if movie_summary == "LLM summarization failed.":
-        return all_text
+        return {"summary": all_text, "google_search_url": None}
 
-    return movie_summary
+    return {"summary": movie_summary, "google_search_url": None}
 
 def get_movies_for_date_or_month(target_date):
     """
@@ -153,8 +174,11 @@ def get_movies_for_date_or_month(target_date):
             rd = movie["release_date"]
             if rd.month == target_date.month and rd.day == target_date.day:
                 found_on_date = True
-                movie_summary = get_movie_summary(movie["url"])
-                movie.update({"Summary": movie_summary})
+                summary_data = get_movie_summary(movie["url"], movie["title"])
+                movie.update({
+                    "Summary": summary_data["summary"],
+                    "google_search_url": summary_data["google_search_url"]
+                })
                 movies_highlight.append(movie)
 
     # If no movies were found for the exact date, search the entire month
@@ -164,8 +188,11 @@ def get_movies_for_date_or_month(target_date):
             for movie in movies:
                 rd = movie["release_date"]
                 if rd.month == target_date.month:
-                    movie_summary = get_movie_summary(movie["url"])
-                    movie.update({"Summary": movie_summary})
+                    summary_data = get_movie_summary(movie["url"], movie["title"])
+                    movie.update({
+                        "Summary": summary_data["summary"],
+                        "google_search_url": summary_data["google_search_url"]
+                    })
                     movies_highlight.append(movie)
 
     return movies_highlight

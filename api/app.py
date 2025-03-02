@@ -52,7 +52,8 @@ def get_movies():
                     "title": movie["title"],
                     "release_date": movie["release_date"].strftime("%B %d, %Y"),
                     "url": movie["url"],
-                    "summary": movie.get("Summary", "Not available")
+                    "summary": movie.get("Summary", "Not available"),
+                    "google_search_url": movie.get("google_search_url", None)
                 })
         
         return jsonify(response)

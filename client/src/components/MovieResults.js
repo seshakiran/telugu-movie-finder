@@ -48,7 +48,16 @@ const MovieResults = ({ movies, searchDate }) => {
                   )}
                 </td>
                 <td className="movie-date">{movie.release_date}</td>
-                <td className="movie-summary">{movie.summary}</td>
+                <td className="movie-summary">
+                  {movie.summary}
+                  {movie.google_search_url && (
+                    <div className="google-search-link">
+                      <a href={movie.google_search_url} target="_blank" rel="noopener noreferrer">
+                        Search on Google
+                      </a>
+                    </div>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
